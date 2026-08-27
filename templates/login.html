@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedRAG | Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0e14; --accent: #00d2ff; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at top right, #1e293b, #0a0e14); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; color: #e0e6ed; }
+        
+        .auth-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); padding: 50px; border-radius: 30px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); text-align: center; }
+        .logo { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -1px; margin-bottom: 5px; }
+        .tagline { color: #94a3b8; font-size: 13px; margin-bottom: 35px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .form-group { text-align: left; margin-bottom: 25px; }
+        label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 8px; font-weight: 700; }
+        input { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px; border-radius: 12px; color: white; outline: none; transition: 0.3s; box-sizing: border-box; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+        
+        .btn { width: 100%; background: var(--accent); color: #0a0e14; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3); background: white; }
+        
+        .flash { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; }
+        .footer { margin-top: 30px; font-size: 13px; color: #94a3b8; }
+        .footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="logo">MEDRAG</div>
+        <div class="tagline">Neural Interface Login</div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}{% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}{% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn">LOG IN</button>
+        </form>
+        <div class="footer">New User? <a href="/signup">Sign Up Here</a></div>
+    </div>
+</body>
+</html>

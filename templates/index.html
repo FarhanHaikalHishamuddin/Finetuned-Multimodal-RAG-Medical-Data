@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedRAG | Clinical Intelligence AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1117;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #00d2ff;
+            --accent-glow: rgba(0, 210, 255, 0.3);
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(at 0% 0%, rgba(0, 210, 255, 0.05) 0, transparent 50%), 
+                              radial-gradient(at 100% 100%, rgba(58, 134, 255, 0.05) 0, transparent 50%);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Nav Bar */
+        nav {
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        .nav-logo { font-weight: 700; font-size: 1.2rem; color: var(--accent); letter-spacing: -0.5px; }
+        .logout { color: #ff4757; text-decoration: none; font-size: 0.8rem; font-weight: 600; opacity: 0.7; transition: 0.3s; }
+        .logout:hover { opacity: 1; }
+
+        /* Layout Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            height: calc(100vh - 70px);
+            gap: 0;
+        }
+
+        /* Main Chat Stream */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #chat-stream {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            max-width: 850px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            margin-top: 15vh;
+            text-align: center;
+        }
+        .welcome-screen h1 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #ffffff, #555);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Message Bubbles */
+        .msg-group { animation: fadeInUp 0.5s ease-out forwards; }
+        .user-query { font-size: 1.5rem; font-weight: 500; color: white; margin-bottom: 1.5rem; border-left: 4px solid var(--accent); padding-left: 15px; }
+        
+        .response-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .result-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(15px);
+            transition: 0.3s;
+        }
+        .result-card:hover { border-color: var(--accent); }
+
+        .card-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 1rem; }
+        .reasoning-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-dim); margin-bottom: 1.5rem; font-weight: 300; }
+        .diagnosis-pill { 
+            padding: 0.8rem 1.2rem; border-radius: 12px; font-weight: 700; display: inline-block;
+            background: linear-gradient(135deg, var(--accent), #3a86ff);
+            box-shadow: 0 4px 15px var(--accent-glow); font-size: 0.9rem;
+        }
+
+        /* Expert UI */
+        .expert-reinforcement-box {
+            grid-column: span 2;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(0, 210, 255, 0.03);
+            border: 1px dashed var(--accent);
+            border-radius: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        .expert-reinforcement-box textarea {
+            width: 100%;
+            background: #0d1117;
+            color: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 12px 0;
+            font-family: inherit;
+            resize: none;
+            box-sizing: border-box;
+        }
+        .btn-inject {
+            background: var(--accent);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-inject:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* Metrics Row */
+        .metrics-row {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-around;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            margin-top: 0.5rem;
+        }
+        .m-item { font-size: 0.75rem; color: var(--text-dim); text-align: center; }
+        .m-item span { color: var(--accent); font-weight: 700; display: block; font-size: 1rem; margin-top: 4px; }
+
+        /* Input Box */
+        .input-wrapper {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .gemini-container {
+            background: #1e1f20;
+            border-radius: 35px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+        .gemini-container:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 210, 255, 0.1); }
+        
+        .file-btn {
+            background: rgba(255,255,255,0.05);
+            border: none; color: var(--accent);
+            width: 42px; height: 42px; border-radius: 50%;
+            cursor: pointer; font-size: 1.4rem; display: flex; align-items: center; justify-content: center;
+        }
+        
+        textarea#user-input {
+            flex: 1; background: transparent; border: none;
+            color: white; font-size: 1.05rem; outline: none;
+            padding: 10px 0; font-family: inherit; resize: none;
+        }
+
+        .send-btn { background: none; border: none; cursor: pointer; opacity: 0.4; transition: 0.3s; }
+        .send-btn.active { opacity: 1; transform: scale(1.1); }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(0,0,0,0.2);
+            border-left: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .side-card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; }
+        .side-header { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 1px; }
+        
+        /* Quota Bar */
+        .quota-info { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; }
+        .bar-bg { background: rgba(255,255,255,0.05); height: 6px; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+
+        .api-box {
+            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px;
+            font-family: monospace; font-size: 11px; color: var(--accent);
+            border: 1px dashed var(--border); cursor: pointer; margin-top: 10px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: #161b22; border: 1px solid var(--accent);
+            padding: 3rem; border-radius: 30px; text-align: center; max-width: 400px;
+            box-shadow: 0 0 40px var(--accent-glow);
+        }
+        .upgrade-btn {
+            background: linear-gradient(135deg, var(--accent), #3a86ff);
+            color: white; border: none; padding: 1rem 2rem; border-radius: 15px;
+            font-weight: 700; width: 100%; cursor: pointer; transition: 0.3s;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+    /* 1. Stack the layout vertically */
+    .dashboard {
+        grid-template-columns: 1fr; /* Single column */
+        height: auto; /* Allow scrolling */
+        overflow-y: auto;
+    }
+
+    /* 2. Chat Area adjustments */
+    .chat-area {
+        height: 85vh; /* Take up most of the screen */
+    }
+    
+    .input-wrapper {
+        padding: 10px; /* Less padding on phones */
+    }
+
+    /* 3. Move Sidebar to the bottom */
+    .sidebar {
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding: 1rem;
+        height: auto;
+    }
+
+    /* 4. Fix Navbar */
+    nav {
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .welcome-screen h1 { font-size: 2rem; } /* Smaller text */
+}
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">MEDRAG.CORE</div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <a href="/docs" style="color:var(--accent); text-decoration:none; font-size:0.8rem;">API DOCS</a>
+        <span style="font-size: 0.8rem; color: var(--text-dim)">USER: <b>{{ user.username }}</b> ({{ user.role.upper() }})</span>
+        <a href="/logout" class="logout">LOGOUT</a>
+    </div>
+</nav>
+
+<div class="dashboard">
+    <div class="chat-area">
+        <div id="chat-stream">
+            <div class="welcome-screen" id="welcome">
+                <h1>Hello, {{ user.username }}</h1>
+                <p style="color: var(--text-dim); font-size: 1.2rem; font-weight: 300;">Ready for high-precision clinical reasoning.</p>
+            </div>
+        </div>
+
+        <div class="input-wrapper">
+            <div id="pre-container" style="display:none; margin-bottom: 10px;">
+                <img id="img-pre" style="height: 60px; border-radius: 12px; border: 1px solid var(--accent);">
+            </div>
+            <div class="gemini-container">
+                <input type="file" id="file-input" hidden accept="image/*">
+                <button class="file-btn" onclick="document.getElementById('file-input').click()">+</button>
+                <textarea id="user-input" rows="1" placeholder="Type clinical findings or upload scan..."></textarea>
+                <button class="send-btn" id="send-trigger" onclick="analyze()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--accent)"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+            <p style="text-align: center; font-size: 0.65rem; color: #555; margin-top: 15px; letter-spacing: 0.5px;">MEDRAG-GENERATED CONTENT. CLINICAL VERIFICATION REQUIRED.</p>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="side-card">
+            <div class="side-header">System Access</div>
+            <div id="status-badge" style="margin-bottom: 1.5rem;">
+                {% if user.is_paid %}
+                    <span style="color: var(--accent); font-weight: 700; font-size: 0.9rem;">💎 PREMIUM ACTIVE</span>
+                {% else %}
+                    <span style="color: #f1c40f; font-weight: 700; font-size: 0.9rem;">⚖️ FREE RESEARCH TIER</span>
+                {% endif %}
+            </div>
+
+            {% if not user.is_paid %}
+            <div id="quota-box" data-limit="{{ limit }}" data-attempts="{{ user.attempts }}">
+                <div class="quota-info">
+                    <span>Usage Quota</span>
+                    <span id="quota-text">{{ user.attempts }} / {{ limit }}</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" id="quota-bar" style="width: {{ (user.attempts / limit) * 100 }}%"></div>
+                </div>
+                <button class="upgrade-btn" style="margin-top: 1.5rem; font-size: 0.8rem; padding: 0.8rem;" onclick="showUpgrade()">UPGRADE ACCOUNT</button>
+            </div>
+            {% else %}
+            <div id="premium-box">
+                <label style="font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase;">Private API Key</label>
+                <div class="api-box" onclick="copyKey(this)">{{ user.api_key }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="side-card" style="flex: 1;">
+            <div class="side-header">Expert Console</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); line-height: 2;">
+                Role: <span style="color: var(--accent)">{{ user.role.upper() }}</span><br>
+                Model: <span style="color: var(--accent)">Qwen-VL-7B(Fine-Tuned)</span><br>
+                Status: <span style="color: #2ecc71">Online</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="upgrade-modal">
+    <div class="modal-content">
+        <h2 style="color:white; margin-top:0;">Quota Exceeded</h2>
+        <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 2rem;">Upgrade to unlock unlimited AI diagnostics and API access.</p>
+        <button class="upgrade-btn" onclick="processUpgrade()">ACTIVATE PREMIUM</button>
+        <button onclick="hideUpgrade()" style="background:none; border:none; color:#555; margin-top:1.5rem; cursor:pointer; font-size: 0.8rem;">Cancel</button>
+    </div>
+</div>
+
+<script>
+    let b64 = null;
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-trigger');
+
+    // 1. Handle File Uploads
+    document.getElementById('file-input').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            b64 = evt.target.result.split(',')[1];
+            document.getElementById('img-pre').src = evt.target.result;
+            document.getElementById('pre-container').style.display = 'block';
+            sendBtn.classList.add('active');
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    // 2. Handle Text Input State
+    userInput.oninput = () => {
+        if(userInput.value.trim() !== "" || b64) sendBtn.classList.add('active');
+        else sendBtn.classList.remove('active');
+    };
+
+    // 3. The Core Analysis Function
+    async function analyze() {
+        const text = userInput.value.trim();
+        if(!text && !b64) return;
+
+        console.log("Analysis started...");
+        document.getElementById('welcome').style.display = 'none';
+        const stream = document.getElementById('chat-stream');
+        const rid = Date.now();
+
+        // Image Preview for Chat
+        let imageHtml = b64 ? `
+            <div style="margin-top: 10px; margin-bottom: 15px;">
+                <img src="data:image/jpeg;base64,${b64}" 
+                     style="max-width: 300px; border-radius: 15px; border: 2px solid var(--accent); box-shadow: 0 0 15px var(--accent-glow);">
+            </div>` : "";
+
+        // Reset Inputs
+        const currentB64 = b64;
+        userInput.value = "";
+        b64 = null;
+        document.getElementById('pre-container').style.display = 'none';
+        sendBtn.classList.remove('active');
+        
+        // Initial Loading State
+        stream.innerHTML += `
+            <div class="msg-group" id="g-${rid}">
+                <div class="user-query">${text || "Visual Analysis Request"}${imageHtml}</div>
+                <div class="response-grid" id="grid-${rid}">
+                    <div class="result-card" style="grid-column: span 2; text-align: center; color: var(--accent); border-style: dashed;">
+                        <span class="loading-dots">Synthesizing clinical intelligence (GPU Mode)...</span>
+                    </div>
+                </div>
+            </div>`;
+        stream.scrollTop = stream.scrollHeight;
+
+        try {
+            const res = await fetch('/query', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: text, image: currentB64})
+            });
+
+            if(res.status === 402) {
+                showUpgrade();
+                document.getElementById(`g-${rid}`).remove();
+                return;
+            }
+
+            const d = await res.json();
+            
+            // Update Quota Bar
+            if (d.attempts !== undefined) {
+                const quotaBox = document.getElementById('quota-box');
+                if (quotaBox) {
+                    const limit = quotaBox.getAttribute('data-limit');
+                    document.getElementById('quota-text').innerText = `${d.attempts} / ${limit}`;
+                    document.getElementById('quota-bar').style.width = (d.attempts / limit * 100) + "%";
+                }
+            }
+
+            // Expert Feedback Logic
+            let expertHtml = "";
+            if (d.user_role === 'expert') {
+                expertHtml = `
+                    <div class="expert-reinforcement-box" id="eb-${rid}">
+                        <div class="card-label">Expert Reinforcement (RLHF)</div>
+                        <textarea id="correct-${rid}" placeholder="Type correct diagnosis..."></textarea>
+                        <button class="btn-inject" onclick="submitReinforcement('${rid}', '${text}')">Inject Knowledge</button>
+                    </div>`;
+            }
+
+            // Update UI with Results
+            document.getElementById(`g-${rid}`).innerHTML = `
+                <div class="user-query">${text || "Visual Analysis Request"}${imageHtml}</div>
+                <div class="response-grid">
+                    <div class="result-card">
+                        <div class="card-label">Generated Answer</div>
+                        <div class="reasoning-text">Reasoning:${d.generated_reasoning}</div>
+                        <div class="diagnosis-pill">RESULT: ${d.generated_answer}</div>
+                    </div>
+                    <div class="result-card" style="border-color: rgba(241, 196, 15, 0.3)">
+                        <div class="card-label" style="color:#f1c40f">Reference answer</div>
+                        <div class="reasoning-text">THINK:${d.extracted_reasoning}</div>
+                        <div class="diagnosis-pill" style="background: linear-gradient(135deg, #f1c40f, #f39c12); color:black">RESULT: ${d.extracted_answer}</div>
+                    </div>
+                    <div class="metrics-row">
+                        <div class="m-item">BERT F1 <span>${d.metrics.bert_f1 || '0.00'}</span></div>
+                        <div class="m-item">Cosine <span>${d.metrics.cosine || '0.00'}</span></div>
+                        <div class="m-item">F1 Score <span>${d.metrics.f1_score || '0.00'}</span></div>
+                        <div class="m-item">BLEU <span>${d.metrics.bleu || '0.00'}</span></div>
+                    </div>
+                    ${expertHtml}
+                </div>`;
+
+        } catch (e) {
+            console.error(e);
+            alert("Server timeout. CPU mode takes a few minutes.");
+        }
+        stream.scrollTop = stream.scrollHeight;
+    }
+
+    // 4. Helper Functions (Outside analyze)
+    async function submitReinforcement(rid, question) {
+        const expertVal = document.getElementById(`correct-${rid}`).value;
+        if(!expertVal) return;
+        const res = await fetch('/expert_feedback', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({question: question, expert_answer: expertVal})
+        });
+        if(res.ok) document.getElementById(`eb-${rid}`).innerHTML = "✓ Saved";
+    }
+
+    function showUpgrade() { document.getElementById('upgrade-modal').style.display = 'flex'; }
+    function hideUpgrade() { document.getElementById('upgrade-modal').style.display = 'none'; }
+
+    async function processUpgrade() {
+        const res = await fetch('/upgrade', {method: 'POST'});
+        if(res.ok) location.reload();
+    }
+
+    function copyKey(el) {
+        navigator.clipboard.writeText(el.innerText);
+        el.innerText = "COPIED";
+        setTimeout(() => location.reload(), 1000);
+    }
+</script>
+</body>
+</html>

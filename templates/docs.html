@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedRAG | API Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1117;
+            --sidebar-bg: #161b22;
+            --accent: #00d2ff;
+            --text: #e2e8f0;
+            --code-bg: #0d1117;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+        }
+        /* Sidebar Navigation */
+        .docs-sidebar {
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            position: fixed;
+            padding: 2rem;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        .docs-sidebar h2 { font-size: 1.2rem; color: var(--accent); margin-bottom: 2rem; }
+        .docs-sidebar a { 
+            display: block; color: #94a3b8; text-decoration: none; 
+            margin-bottom: 1rem; font-size: 0.9rem; transition: 0.3s;
+        }
+        .docs-sidebar a:hover { color: var(--accent); }
+
+        /* Main Content */
+        .content {
+            margin-left: 300px;
+            padding: 4rem;
+            max-width: 900px;
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        h3 { color: var(--accent); margin-top: 2rem; }
+        
+        .method {
+            display: inline-block;
+            background: #238636;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+        .endpoint { font-family: 'Fira Code', monospace; color: #8b949e; }
+
+        pre {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            overflow-x: auto;
+        }
+        code { font-family: 'Fira Code', monospace; color: #79c0ff; font-size: 0.9rem; }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .param-table th, .param-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #30363d;
+        }
+        .param-table th { color: var(--accent); font-size: 0.8rem; text-transform: uppercase; }
+
+        @media (max-width: 768px) {
+    /* 1. Un-fix the sidebar */
+    .docs-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        box-sizing: border-box;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* 2. Fix the content area */
+    .content {
+        margin-left: 0;
+        padding: 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* 3. Adjust Code Blocks */
+    pre {
+        padding: 10px;
+        font-size: 0.8rem; /* Smaller font for code */
+    }
+}
+    </style>
+</head>
+<body>
+
+<div class="docs-sidebar">
+    <h2>MedRAG Docs</h2>
+    <a href="#authentication">Authentication</a>
+    <a href="#analyze">Analyze Endpoint</a>
+    <a href="#response">Response Format</a>
+    <a href="#errors">Error Codes</a>
+    <hr style="opacity:0.1; margin: 20px 0;">
+    <a href="/" style="color:var(--accent)">← Back to Dashboard</a>
+</div>
+
+<div class="content">
+    <h1>API Reference</h1>
+    <p>Integrate the MedRAG clinical intelligence engine directly into your hospital management system or mobile application.</p>
+
+    <section id="authentication">
+        <h3>Authentication</h3>
+        <p>All API requests must include the <code>X-API-KEY</code> header. You can generate this key from your user dashboard after upgrading to a Premium account.</p>
+        <pre><code>X-API-KEY: MED-YOUR_SECRET_TOKEN_HERE</code></pre>
+    </section>
+
+    <section id="analyze">
+        <h3>Analyze Medical Case</h3>
+        <p>Analyze clinical text and optional medical imagery using the fine-tuned Qwen-VL model.</p>
+        <p><span class="method">POST</span> <span class="endpoint">/api/v1/analyze</span></p>
+
+        <h4>Request Body (JSON)</h4>
+        <table class="param-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>text</code></td><td>String</td><td>Clinical findings or patient symptoms (Required).</td></tr>
+                <tr><td><code>image</code></td><td>String</td><td>Base64 encoded image string (Optional).</td></tr>
+            </tbody>
+        </table>
+
+        <h4>Example Python Request</h4>
+        <pre><code>import requests
+
+url = "http://{{ request.host }}/api/v1/analyze"
+headers = { "X-API-KEY": "MED-XXXXX" }
+payload = {
+    "text": "Chest X-ray shows opacity in the left lower lobe.",
+    "image": None
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())</code></pre>
+    </section>
+
+    <section id="response">
+        <h3>Response Object</h3>
+        <p>The server returns a structured JSON object including the AI's reasoning and similarity metrics.</p>
+        <pre><code>{
+    "status": "success",
+    "results": {
+        "generated_answer": "Community-Acquired Pneumonia",
+        "generated_reasoning": "Based on the localized opacity...",
+        "metrics": {
+            "cosine": 0.89,
+            "bert_f1": 0.92
+        }
+    }
+}</code></pre>
+    </section>
+
+    <section id="errors">
+        <h3>Error Codes</h3>
+        <table class="param-table">
+            <thead>
+                <tr><th>Code</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>401</code></td><td>Unauthorized: Missing or invalid API Key.</td></tr>
+                <tr><td><code>400</code></td><td>Bad Request: Missing 'text' field.</td></tr>
+                <tr><td><code>500</code></td><td>Internal Server Error: AI model inference failed.</td></tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+</body>
+</html>
